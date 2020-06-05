@@ -1,0 +1,48 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: db-master
+spec:
+  selector:
+    app: mysql-master
+  type: NodePort
+  ports:
+    - port: 3006
+      protocol: TCP
+      targetPort: 3306
+      nodePort: 30336
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-master
+  labels:
+    env: online
+spec:
+  selector:
+    matchLabels:
+      app: mysql-master
+  replicas: 1
+  serviceName: mysql-master
+  template:
+    metadata:
+        labels:
+          app: mysql-master
+    spec:
+      containers:
+        - name: mysql-master
+          image: mysql:5.6
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "000000"
+          ports:
+            - containerPort: 3006
+              name: mysql-master
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-data
+      volumes:
+      - name:  mysql-data
+        hostPath:
+          path: /Users/zenoswang/mysql-data
+          type: Directory
